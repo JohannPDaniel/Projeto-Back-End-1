@@ -24,7 +24,7 @@ let listaMensagem = []
 let idAutomatico = 1
 
 let users = []
-let idAdmin = 1
+let idNewUser = 1
 
 // http://localhost:3000
 app.get('/', (request, response) => {
@@ -53,45 +53,45 @@ app.get('/', (request, response) => {
 // ------------------ Criar pessoa usuária -----------------
 // http://localhost:3000/signup
 
-app.post('/signup', async (request,response) => {
-    const data = request.body
-    const { name, email, password } = data
+app.post('/signup', async (request, response) => {
+    const data = request.body;
+    const { name, email, password } = data;
 
-    if (!name || name.trim() === "") {
-        return response.status(400).json({ Mensagem: "Por favor, verifique se passou o nome " })
+    if (!name || name.trim() === '') {
+        return response.status(400).json({ Mensagem: 'Por favor, verifique se passou o nome' });
     }
 
-    if (!email || email.trim() === "") {
-        return response.status(400).json({ Mensagem: "Por favor, verifique se passou o email" })
+    if (!email || email.trim() === '') {
+        return response.status(400).json({ Mensagem: 'Por favor, verifique se passou o email' });
     }
 
-    const verificarEmail = users.find((admin)=> admin.email === email)
+    const verificarEmail = users.find((admin) => admin.email === email);
 
-    if(verificarEmail){
-        return response.status(400).json({ Mensagem: "Email já cadastrado, insira outro" })
+    if (verificarEmail) {
+        return response.status(400).json({ Mensagem: 'Email já cadastrado, insira outro' });
     }
 
     if (!password || isNaN(password)) {
-        return response.status(400).json({ Mensagem: "Por favor, verifique se passou a senha " })
+        return response.status(400).json({ Mensagem: 'Por favor, verifique se passou a senha' });
     }
 
-    const senhaCriptografada = await bcrypt.hash(password,10)
+    const senhaCriptografada = await bcrypt.hash(password, 10);
 
     let newUser = {
-        id : idAdmin,
+        id: idNewUser,
         name,
-        email, 
-        password : senhaCriptografada
-    }
-    
-    users.push(newUser)
-  
-    idAdmin++
-  
-        return response.status(201).json({ 
-            Mensagem: `Pessoa administradora do email ${email}, cadastrada com sucesso!`,
-        })
-})
+        email,
+        password: senhaCriptografada,
+    };
+
+    users.push(newUser);
+
+    idNewUser++;
+
+    return response.status(201).json({ 
+        Mensagem: `Pessoa administradora do email ${email}, cadastrada com sucesso!` 
+    });
+});
 
 // ------------------ login --------------------
 // http://localhost:3000/login
@@ -126,11 +126,11 @@ app.post('/login', async (request, response) => {
     });
 });
 
-// -------------------- Criar Mensagem ------------------------
+// --------------- Criar Mensagem -----------------
 // http://localhost:3000/message
 app.post('/message', (request,response) => {
     const data = request.body
-    const { title, descrition } = data
+    const { title, description, email } = data
 
     if (!title || title.trim() === "") {
         return response.status(400).json({
@@ -138,26 +138,131 @@ app.post('/message', (request,response) => {
         })
     }
 
-    if (!descrition || descrition.trim() === "") {
+    if (!description || description.trim() === "") {
         return response.status(400).json({
             Mensagem: "Favor enviar uma descrição válida"
+        })
+    }
+
+    if (!email || email.trim() === "") {
+        return response.status(400).json({
+            Mensagem: "Favor enviar um e-mail válido"
+        })
+    }
+
+    const validarEmail = users.find(msg => msg.email === email)
+
+    if (!validarEmail) {
+        return response.status(404).json({
+            Mensagem: "Email não encontrado, verifique ou crie uma conta"
         })
     }
 
     let newMessage = {
         id:idAutomatico,
         title,
-        descrition
+        description,
+        email
     }
-
-    users.push(newMessage)
-
+    
+    listaMensagem.push(newMessage)
     idAutomatico++
 
     return response.status(201).json({
         Mensagem: `Mensagem criada com sucesso`,
         newMessage
     })
+})
+
+// ---------- ler mensagem ----------------
+// http://localhost:3000/message/:email
+app.get('/message/:email', (request,response) => {
+    const { email } = request.params
+
+    if (!email) {
+        return response.status(400).json({
+            Mensagem: "Favor passar um email válido"
+        })
+    }
+
+    const procurarEmail = users.find(msg => msg.email === email)
+
+    if (!procurarEmail) {
+        return response.status(404).json({
+            Mensagem: "Email não encontrado, verifique ou crie uma conta "
+        })
+    }
+
+    return response.status(200).json({
+        Mensagem: "Seja bem-vindo!",
+        listaMensagem
+    })
+})
+
+// ----------- atualizar mensagem -----------
+// http://localhost:3000/message/:id
+app.put('/message/:id', (request,response) => {
+    const id = Number(request.params.id)
+
+    const data = request.body
+    const { title, description } = data
+
+    if (!id || isNaN(id)) {
+        return response.status(400).json({
+            Mensagem: " Por favor, informe um id válido da mensagem"
+        })
+    }
+
+    const validarId = listaMensagem.findIndex(mensagem => mensagem.id === id)
+
+    if (!title || title.trim() === '') {
+        return response.status(400).json({
+            Mensagem: "Favor enviar um titulo atualizado válido"
+        })
+    }
+
+    if (!description || description.trim() === '') {
+        return response.status(400).json({
+            Mensagem: "Favor enviar uma descrição atualizada válida"
+        })
+    }
+
+    if (validarId === -1) {
+        return response.status(404).json({
+            Mensagem: "Mensagem não encontrada"
+        });
+    }
+
+    const mensagemAtualizada = listaMensagem[validarId];
+    mensagemAtualizada.title = title;
+    mensagemAtualizada.description = description;
+
+    return response.status(200).json({
+        Mensagem: "Mensagem atualizada com sucesso!",
+        mensagemAtualizada
+    });
+});
+
+//----------- deletar mensagem --------------
+// http://localhost:3000/message/:id
+app.delete('/message/:id', (request,response) => {
+    const id = Number(request.params.id)
+
+    if (!id || isNaN(id)) {
+        return response.status(400).json({
+            Mensagem: "Favor enviar um id válido"
+        })
+    }
+
+    const procurarId = listaMensagem.findIndex(msg => msg.id === id)
+
+    if (procurarId === -1) {
+        return response.status(404).json({
+            Mensagem: "Mensagem não encontrada, verifique o identificador em nosso banco" });
+    } else {
+        listaMensagem.splice(procurarId, 1);
+        return response.status(200).json({ Mensagem: "Mensagem apagada com sucesso." });
+    }
 })
 
 
