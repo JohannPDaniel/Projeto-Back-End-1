@@ -26,7 +26,7 @@ let idAutomatico = 1
 let users = []
 let idAdmin = 1
 
-// http://localhost:8080
+// http://localhost:3000
 app.get('/', (request, response) => {
     const { param } = request.query;
 
@@ -51,10 +51,11 @@ app.get('/', (request, response) => {
 
 */
 // ------------------ Criar pessoa usuária -----------------
-// http://localhost:8080/signup
+// http://localhost:3000/signup
 
 app.post('/signup', async (request,response) => {
-    const { name, email, password } = request.body
+    const data = request.body
+    const { name, email, password } = data
 
     if (!name || name.trim() === "") {
         return response.status(400).json({ Mensagem: "Por favor, verifique se passou o nome " })
@@ -78,8 +79,8 @@ app.post('/signup', async (request,response) => {
 
     let newUser = {
         id : idAdmin,
-        name: name,
-        email : email, 
+        name,
+        email, 
         password : senhaCriptografada
     }
     
@@ -93,10 +94,11 @@ app.post('/signup', async (request,response) => {
 })
 
 // ------------------ login --------------------
-// http://localhost:8080/login
+// http://localhost:3000/login
 
 app.post('/login', async (request, response) => {
-    const { email, password } = request.body;
+    const data = request.body
+    const { email, password } = data;
 
     if (!email || email.trim() === '') {
         return response.status(400).json({ mensagem: 'Insira um e-mail válido' });
@@ -124,10 +126,8 @@ app.post('/login', async (request, response) => {
     });
 });
 
-/*
-    
-*/
-// http://localhost:8080/message
+// -------------------- Criar Mensagem ------------------------
+// http://localhost:3000/message
 app.post('/message', (request,response) => {
     const data = request.body
     const { title, descrition } = data
