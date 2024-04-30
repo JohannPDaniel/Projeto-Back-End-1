@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors"
 import bcrypt from "bcrypt"
+import validarUsuario from "./Middleware/validarUsuario.js";
 
 const app = express();
 
@@ -53,72 +54,100 @@ app.get('/', (request, response) => {
 // ------------------ Criar pessoa usuária -----------------
 // http://localhost:3000/signup
 
-app.post('/signup', async (request, response) => {
-    const data = request.body;
-    const { name, email, password } = data;
+// app.post('/signup', validarUsuario, async (request, response) => {
+//     const data = request.body; 
+//     const { name } = data; 
 
+//     if (!name || name.trim() === '') {
+//         return response.status(400).json({
+//             Mensagem: 'Por favor, insira um nome válido'
+//         });
+//     }
+
+//     console.log('Buscando e-mail:', data.email); 
+
+//     console.log('Lista de usuários:', users); 
+//     const admin = users.find(user => user.email === data.email);
+
+//     if (admin) {
+//         console.log('Admin não encontrado para e-mail:', data.email); 
+//         return response.status(400).json({ 
+//             Mensagem: 'E-mail não encontrado no sistema, verifique ou crie uma conta' 
+//         });
+//     }
+
+//     const senhaCriptografada = await bcrypt.hash(data.password, 10);
+
+//     const newUser = {
+//         id: idNewUser,
+//         name,
+//         email: data.email,
+//         password: senhaCriptografada
+//     };
+
+//     users.push(newUser);
+
+//     idNewUser++; 
+
+//     return response.status(201).json({ 
+//         Mensagem: `Usuário com e-mail ${newUser.email} cadastrado com sucesso!`
+//     });
+// });
+
+app.post('/signup', validarUsuario, async (request, response) => {
+    const data = request.body; 
+    const { name } = data; 
     if (!name || name.trim() === '') {
-        return response.status(400).json({ Mensagem: 'Por favor, verifique se passou o nome' });
+        return response.status(400).json({
+            Mensagem: 'Por favor, insira um nome válido'
+        });
     }
 
-    if (!email || email.trim() === '') {
-        return response.status(400).json({ Mensagem: 'Por favor, verifique se passou o email' });
+    const existingUser = users.find(user => user.email === data.email);
+
+    if (!existingUser) {
+        return response.status(400).json({ 
+            Mensagem: 'Um usuário com este e-mail já existe no sistema' 
+        });
     }
 
-    const verificarEmail = users.find((admin) => admin.email === email);
+    const senhaCriptografada = await bcrypt.hash(data.password, 10);
 
-    if (verificarEmail) {
-        return response.status(400).json({ Mensagem: 'Email já cadastrado, insira outro' });
-    }
-
-    if (!password || isNaN(password)) {
-        return response.status(400).json({ Mensagem: 'Por favor, verifique se passou a senha' });
-    }
-
-    const senhaCriptografada = await bcrypt.hash(password, 10);
-
-    let newUser = {
+    const newUser = {
         id: idNewUser,
         name,
-        email,
+        email: data.email,
         password: senhaCriptografada,
     };
 
     users.push(newUser);
 
-    idNewUser++;
+    idNewUser++; 
 
     return response.status(201).json({ 
-        Mensagem: `Pessoa administradora do email ${email}, cadastrada com sucesso!` 
+        Mensagem: `Usuário com e-mail ${newUser.email} cadastrado com sucesso!`
     });
 });
+
 
 // ------------------ login --------------------
 // http://localhost:3000/login
 
-app.post('/login', async (request, response) => {
+app.post('/login', validarUsuario, async (request, response) => {
     const data = request.body
-    const { email, password } = data;
+    
+    const admin = users.find(user => user.email === data.email);
 
-    if (!email || email.trim() === '') {
-        return response.status(400).json({ mensagem: 'Insira um e-mail válido' });
-    }
-
-    if (!password || isNaN(password)) {
-        return response.status(400).json({ mensagem: 'Insira uma senha válida' });
-    }
-    const admin = users.find(admin => admin.email === email);
-
-    if (!admin) {
-        return response.status(404).json({ 
+    if (admin) {
+        return response.status(400).json({ 
             mensagem: ' Email não encontrado no sistema, verifique ou crie uma conta' 
         });
     }
     
-    const senhaMatches = await bcrypt.compare(password, admin.password);
+    const senhaMatches = await bcrypt.compare(data.password, admin.password);
 
     if (!senhaMatches) {
-        return response.status(401).json({ mensagem: 'Senha incorreta ou credencial inválida' });
+        return response.status(400).json({ mensagem: 'Senha incorreta ou credencial inválida' });
     }
 
     return response.status(200).json({
@@ -129,8 +158,17 @@ app.post('/login', async (request, response) => {
 // --------------- Criar Mensagem -----------------
 // http://localhost:3000/message
 app.post('/message', (request,response) => {
+
+    const { email } = request.query;
+
+    if (!email || email.trim() === "") {
+        return response.status(400).json({
+            Mensagem: "Favor enviar um e-mail válido"
+        })
+    }
+
     const data = request.body
-    const { title, description, email } = data
+    const { title, description } = data
 
     if (!title || title.trim() === "") {
         return response.status(400).json({
@@ -141,12 +179,6 @@ app.post('/message', (request,response) => {
     if (!description || description.trim() === "") {
         return response.status(400).json({
             Mensagem: "Favor enviar uma descrição válida"
-        })
-    }
-
-    if (!email || email.trim() === "") {
-        return response.status(400).json({
-            Mensagem: "Favor enviar um e-mail válido"
         })
     }
 
