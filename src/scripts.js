@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import bcrypt from "bcrypt"
 import validarUsuario from "./Middleware/validarUsuario.js";
+import validarMensagem from "./Middleware/validarMensagem.js";
 
 const app = express();
 
@@ -54,60 +55,21 @@ app.get('/', (request, response) => {
 // ------------------ Criar pessoa usuária -----------------
 // http://localhost:3000/signup
 
-// app.post('/signup', validarUsuario, async (request, response) => {
-//     const data = request.body; 
-//     const { name } = data; 
-
-//     if (!name || name.trim() === '') {
-//         return response.status(400).json({
-//             Mensagem: 'Por favor, insira um nome válido'
-//         });
-//     }
-
-//     console.log('Buscando e-mail:', data.email); 
-
-//     console.log('Lista de usuários:', users); 
-//     const admin = users.find(user => user.email === data.email);
-
-//     if (admin) {
-//         console.log('Admin não encontrado para e-mail:', data.email); 
-//         return response.status(400).json({ 
-//             Mensagem: 'E-mail não encontrado no sistema, verifique ou crie uma conta' 
-//         });
-//     }
-
-//     const senhaCriptografada = await bcrypt.hash(data.password, 10);
-
-//     const newUser = {
-//         id: idNewUser,
-//         name,
-//         email: data.email,
-//         password: senhaCriptografada
-//     };
-
-//     users.push(newUser);
-
-//     idNewUser++; 
-
-//     return response.status(201).json({ 
-//         Mensagem: `Usuário com e-mail ${newUser.email} cadastrado com sucesso!`
-//     });
-// });
-
 app.post('/signup', validarUsuario, async (request, response) => {
     const data = request.body; 
     const { name } = data; 
+
     if (!name || name.trim() === '') {
         return response.status(400).json({
-            Mensagem: 'Por favor, insira um nome válido'
+            Mensagem: 'Por favor, verifique se passou o nome'
         });
     }
 
-    const existingUser = users.find(user => user.email === data.email);
-
-    if (!existingUser) {
+    const admin = users.find(user => user.email === data.email);
+   
+    if (admin) {
         return response.status(400).json({ 
-            Mensagem: 'Um usuário com este e-mail já existe no sistema' 
+            Mensagem: 'Email já cadastrado, insira outro' 
         });
     }
 
@@ -117,7 +79,7 @@ app.post('/signup', validarUsuario, async (request, response) => {
         id: idNewUser,
         name,
         email: data.email,
-        password: senhaCriptografada,
+        password: senhaCriptografada
     };
 
     users.push(newUser);
@@ -138,7 +100,7 @@ app.post('/login', validarUsuario, async (request, response) => {
     
     const admin = users.find(user => user.email === data.email);
 
-    if (admin) {
+    if (!admin) {
         return response.status(400).json({ 
             mensagem: ' Email não encontrado no sistema, verifique ou crie uma conta' 
         });
@@ -157,28 +119,15 @@ app.post('/login', validarUsuario, async (request, response) => {
 
 // --------------- Criar Mensagem -----------------
 // http://localhost:3000/message
-app.post('/message', (request,response) => {
+app.post('/message', validarMensagem, (request,response) => {
 
+    const data = request.body
+    
     const { email } = request.query;
 
     if (!email || email.trim() === "") {
         return response.status(400).json({
             Mensagem: "Favor enviar um e-mail válido"
-        })
-    }
-
-    const data = request.body
-    const { title, description } = data
-
-    if (!title || title.trim() === "") {
-        return response.status(400).json({
-            Mensagem: "Favor enviar um titulo válido"
-        })
-    }
-
-    if (!description || description.trim() === "") {
-        return response.status(400).json({
-            Mensagem: "Favor enviar uma descrição válida"
         })
     }
 
@@ -192,9 +141,8 @@ app.post('/message', (request,response) => {
 
     let newMessage = {
         id:idAutomatico,
-        title,
-        description,
-        email
+        title: data.title,
+        description: data.description,
     }
     
     listaMensagem.push(newMessage)
@@ -234,10 +182,10 @@ app.get('/message/:email', (request,response) => {
 // ----------- atualizar mensagem -----------
 // http://localhost:3000/message/:id
 app.put('/message/:id', (request,response) => {
+    
     const id = Number(request.params.id)
 
     const data = request.body
-    const { title, description } = data
 
     if (!id || isNaN(id)) {
         return response.status(400).json({
@@ -247,18 +195,6 @@ app.put('/message/:id', (request,response) => {
 
     const validarId = listaMensagem.findIndex(mensagem => mensagem.id === id)
 
-    if (!title || title.trim() === '') {
-        return response.status(400).json({
-            Mensagem: "Favor enviar um titulo atualizado válido"
-        })
-    }
-
-    if (!description || description.trim() === '') {
-        return response.status(400).json({
-            Mensagem: "Favor enviar uma descrição atualizada válida"
-        })
-    }
-
     if (validarId === -1) {
         return response.status(404).json({
             Mensagem: "Mensagem não encontrada"
@@ -266,8 +202,8 @@ app.put('/message/:id', (request,response) => {
     }
 
     const mensagemAtualizada = listaMensagem[validarId];
-    mensagemAtualizada.title = title;
-    mensagemAtualizada.description = description;
+    mensagemAtualizada.title = data.title;
+    mensagemAtualizada.description = data.description;
 
     return response.status(200).json({
         Mensagem: "Mensagem atualizada com sucesso!",
