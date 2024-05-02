@@ -181,7 +181,7 @@ app.get('/message/:email', (request,response) => {
 
 // ----------- atualizar mensagem -----------
 // http://localhost:3000/message/:id
-app.put('/message/:id', (request,response) => {
+app.put('/message/:id', validarMensagem, (request,response) => {
     
     const id = Number(request.params.id)
 
