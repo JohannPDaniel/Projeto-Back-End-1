@@ -11,14 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = 3000;
-// ------------------------------------------------------------------
 
-/*
-    Faça as configurações iniciais do express ;
-    Crie um recurso com a seguinte rota ' / '
-    Em caso de sucesso, retorna um status 200
-    Com a seguinte mensagem ('Bem vindo à aplicação')
-*/
 
 // ------------- Iniciando aplicação -------------------
 
@@ -41,17 +34,6 @@ app.get('/', (request, response) => {
     }
 });
 
-/*
-    - Sign Up - Criar pessoa usuária
-    - Cada pessoa usuário deve ser um newUser
-
-    /*  Name, email, password devem ser 
-        inseridos pela pessoa usuária  e todos 
-        esses itens precisam ser validados .
-    /*
-    - Caso não passe um desses itens, informe um status (400) .
-
-*/
 // ------------------ Criar pessoa usuária -----------------
 // http://localhost:3000/signup
 
