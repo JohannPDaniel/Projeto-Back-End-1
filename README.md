@@ -25,9 +25,10 @@ Por favor, note que este é um projeto de exemplo e não possui persistência de
 ## Tecnologias usadas na API:
 
 <div style="display: flex; gap: 10px;">
-  <img src="./images/javaScript.jpg" style="width: 110px; height: auto;" alt="JavaScript">
-  <img src="./images/nodeJs.jpg" style="width: 110px; height: 32px;" alt="Node.js">
-  <img src="./images/express.jpg" style="width: 110px; height: 32px;" alt="Express.js">
-  <img src="./images/vsCode.jpg" style="width: 140px; height: 32px;" alt="VS Code">
-  <img src="./images/git.jpg" style="width: 65px; height: 32px;" alt="Git">
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E.svg?style=for-the-badge&logo=JavaScript&logoColor=black" style="width: 110px; height: auto;" alt="JavaScript">
+  <img src="https://img.shields.io/badge/Node.js-5FA04E.svg?style=for-the-badge&logo=nodedotjs&logoColor=white" style="width: 110px; height: 32px;" alt="Node.js">
+  <img src="https://img.shields.io/badge/Express-000000.svg?style=for-the-badge&logo=Express&logoColor=white" style="width: 110px; height: 32px;" alt="Express.js">
+  <img src="https://img.shields.io/badge/VSCode-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white" style="width: 140px; height: 32px;" alt="VS Code">
+  <img src="https://img.shields.io/badge/Git-F05032.svg?style=for-the-badge&logo=Git&logoColor=white" style="width: 65px; height: 32px;" alt="Git">
+  <img src="https://img.shields.io/badge/GitHub-181717.svg?style=for-the-badge&logo=GitHub&logoColor=white" style="width: 95px; height: 32px;" alt="GitHub">
 </div>
