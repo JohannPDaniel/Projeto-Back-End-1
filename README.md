@@ -32,7 +32,7 @@ Este projeto utiliza validações de middleware personalizadas para garantir que
 
 Por favor, note que este é um projeto de exemplo e não possui persistência de dados, o que significa que todos os dados serão perdidos quando o servidor for reiniciado. Para um ambiente de produção, seria necessário implementar um banco de dados para armazenar os dados do usuário e das mensagens de forma segura e eficiente.
 
-[Para acessar a documentação do projeto, clique aqui](https://documenter.getpostman.com/view/34269147/2sA3BuW8vm)
+[Para acessar a documentação do projeto, clique aqui](https://documenter.getpostman.com/view/34269147/2sA3JM61M2)
 
 ## Tecnologias usadas na API:
 
