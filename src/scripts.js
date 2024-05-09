@@ -15,7 +15,7 @@ const PORT = 3000;
 
 // ------------- Iniciando aplicação -------------------
 
-let listaMensagem = []
+let listaRecados = []
 let idAutomatico = 1
 
 let users = []
@@ -99,7 +99,7 @@ app.post('/login', validarUsuario, async (request, response) => {
     });
 });
 
-// --------------- Criar Mensagem -----------------
+// --------------- Criar recado -----------------
 // http://localhost:3000/message
 app.post('/message', validarMensagem, (request,response) => {
 
@@ -127,7 +127,7 @@ app.post('/message', validarMensagem, (request,response) => {
         description: data.description,
     }
     
-    listaMensagem.push(newMessage)
+    listaRecados.push(newMessage)
     idAutomatico++
 
     return response.status(201).json({
@@ -136,7 +136,7 @@ app.post('/message', validarMensagem, (request,response) => {
     })
 })
 
-// ---------- ler mensagem ----------------
+// ---------- ler recado ----------------
 // http://localhost:3000/message/:email
 app.get('/message/:email', (request,response) => {
     const { email } = request.params
@@ -157,7 +157,7 @@ app.get('/message/:email', (request,response) => {
 
     return response.status(200).json({
         Mensagem: "Seja bem-vindo!",
-        listaMensagem
+        listaRecados
     })
 })
 
@@ -175,7 +175,7 @@ app.put('/message/:id', validarMensagem, (request,response) => {
         })
     }
 
-    const validarId = listaMensagem.findIndex(mensagem => mensagem.id === id)
+    const validarId = listaRecados.findIndex(mensagem => mensagem.id === id)
 
     if (validarId === -1) {
         return response.status(404).json({
@@ -183,7 +183,7 @@ app.put('/message/:id', validarMensagem, (request,response) => {
         });
     }
 
-    const mensagemAtualizada = listaMensagem[validarId];
+    const mensagemAtualizada = listaRecados[validarId];
     mensagemAtualizada.title = data.title;
     mensagemAtualizada.description = data.description;
 
@@ -204,13 +204,13 @@ app.delete('/message/:id', (request,response) => {
         })
     }
 
-    const procurarId = listaMensagem.findIndex(msg => msg.id === id)
+    const procurarId = listaRecados.findIndex(msg => msg.id === id)
 
     if (procurarId === -1) {
         return response.status(404).json({
             Mensagem: "Mensagem não encontrada, verifique o identificador em nosso banco" });
     } else {
-        listaMensagem.splice(procurarId, 1);
+        listaRecados.splice(procurarId, 1);
         return response.status(200).json({ Mensagem: "Mensagem apagada com sucesso." });
     }
 })
