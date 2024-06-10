@@ -15,7 +15,7 @@ const PORT = 3000;
 
 // ------------- Iniciando aplicação -------------------
 
-let listaRecados = []
+let message = []
 let idAutomatico = 1
 
 let users = []
@@ -23,15 +23,10 @@ let idNewUser = 1
 
 // http://localhost:3000
 app.get('/', (request, response) => {
-    const { param } = request.query;
-
-    if (param === '/') {
-        return response.status(200).json({ Mensagem: "Bem-vindo à aplicação" });
-    } else if (param === undefined) {
-        return response.status(400).json({ Mensagem: "Parâmetro ausente" });
-    } else {
-        return response.status(400).json({ Mensagem: "Parâmetro inválido" });
-    }
+    return response.status(200).json({ 
+        success: true,
+        Message: "Bem vindo à aplicação"
+    })
 });
 
 // ------------------ Criar pessoa usuária -----------------
@@ -39,29 +34,32 @@ app.get('/', (request, response) => {
 
 app.post('/signup', validarUsuario, async (request, response) => {
     const data = request.body; 
-    const { name } = data; 
+
+    const { name } = data
 
     if (!name || name.trim() === '') {
         return response.status(400).json({
-            Mensagem: 'Por favor, verifique se passou o nome'
+            Success: false,
+            Message: 'Por favor, verifique se passou o nome'
         });
     }
 
     const admin = users.find(user => user.email === data.email);
    
     if (admin) {
-        return response.status(400).json({ 
-            Mensagem: 'Email já cadastrado, insira outro' 
+        return response.status(400).json({
+            success: false, 
+            Message: 'Email já cadastrado, insira outro' 
         });
     }
 
-    const senhaCriptografada = await bcrypt.hash(data.password, 10);
+    const passwordEncrypted = await bcrypt.hash(data.password, 10);
 
     const newUser = {
         id: idNewUser,
         name,
         email: data.email,
-        password: senhaCriptografada
+        password: passwordEncrypted
     };
 
     users.push(newUser);
@@ -69,7 +67,9 @@ app.post('/signup', validarUsuario, async (request, response) => {
     idNewUser++; 
 
     return response.status(201).json({ 
-        Mensagem: `Usuário com e-mail ${newUser.email} cadastrado com sucesso!`
+        Success: true,
+        Message: `Usuário com e-mail ${newUser.email} cadastrado com sucesso!`,
+        data: newUser
     });
 });
 
@@ -84,40 +84,52 @@ app.post('/login', validarUsuario, async (request, response) => {
 
     if (!admin) {
         return response.status(400).json({ 
-            mensagem: ' Email não encontrado no sistema, verifique ou crie uma conta' 
+            Success: false,
+            Message: 'Email não encontrado no sistema, verifique ou crie uma conta' 
         });
     }
     
-    const senhaMatches = await bcrypt.compare(data.password, admin.password);
+    const comparePasswords = await bcrypt.compare(data.password, admin.password);
 
-    if (!senhaMatches) {
-        return response.status(400).json({ mensagem: 'Senha incorreta ou credencial inválida' });
+    if (!comparePasswords) {
+        return response.status(400).json({
+            Success: false,
+            Message: 'Senha incorreta ou credencial inválida' 
+        });
+    }
+    const user = {
+        id: admin.id,
+        name: admin.name,
+        email: admin.email
     }
 
     return response.status(200).json({
-        mensagem: `Seja bem-vinda(o) ${admin.name}! Pessoa usuária logada com sucesso!`,
+        Message: `Seja bem-vinda(o) ${admin.name}! Pessoa usuária logada com sucesso!`,
+        data: user
     });
 });
 
 // --------------- Criar recado -----------------
-// http://localhost:3000/message
-app.post('/message', validarMensagem, (request,response) => {
+// http://localhost:3000/message/:email
+app.post('/message/:email', validarMensagem, (request,response) => {
 
     const data = request.body
     
-    const { email } = request.query;
+    const { email } = request.params;
 
     if (!email || email.trim() === "") {
         return response.status(400).json({
-            Mensagem: "Favor enviar um e-mail válido"
+            Success: false,
+            Message: "Favor enviar um e-mail válido"
         })
     }
 
-    const validarEmail = users.find(msg => msg.email === email)
+    const validateEmail = users.find(msg => msg.email === email)
 
-    if (!validarEmail) {
+    if (!validateEmail) {
         return response.status(404).json({
-            Mensagem: "Email não encontrado, verifique ou crie uma conta"
+            Success: false, 
+            Message: "Email não encontrado, verifique ou crie uma conta"
         })
     }
 
@@ -127,12 +139,13 @@ app.post('/message', validarMensagem, (request,response) => {
         description: data.description,
     }
     
-    listaRecados.push(newMessage)
+    message.push(newMessage)
     idAutomatico++
 
     return response.status(201).json({
-        Mensagem: `Mensagem criada com sucesso`,
-        newMessage
+        Success: true,
+        Message: `Mensagem criada com sucesso`,
+        data: newMessage
     })
 })
 
@@ -143,21 +156,24 @@ app.get('/message/:email', (request,response) => {
 
     if (!email) {
         return response.status(400).json({
-            Mensagem: "Favor passar um email válido"
+            Success: false,
+            Message: "Favor passar um email válido"
         })
     }
 
-    const procurarEmail = users.find(msg => msg.email === email)
+    const searchEmail = users.find(msg => msg.email === email)
 
-    if (!procurarEmail) {
+    if (!searchEmail) {
         return response.status(404).json({
-            Mensagem: "Email não encontrado, verifique ou crie uma conta "
+            Success: false,
+            Message: "Email não encontrado, verifique ou crie uma conta "
         })
     }
 
     return response.status(200).json({
-        Mensagem: "Seja bem-vindo!",
-        listaRecados
+        Success: true,
+        Message: "Seja bem-vindo!",
+        data: message
     })
 })
 
@@ -171,25 +187,28 @@ app.put('/message/:id', validarMensagem, (request,response) => {
 
     if (!id || isNaN(id)) {
         return response.status(400).json({
-            Mensagem: " Por favor, informe um id válido da mensagem"
+            Success: false,
+            Message: "Por favor, informe um id válido da mensagem"
         })
     }
 
-    const validarId = listaRecados.findIndex(mensagem => mensagem.id === id)
+    const validateId = message.findIndex(mensagem => mensagem.id === id)
 
-    if (validarId === -1) {
+    if (validateId === -1) {
         return response.status(404).json({
-            Mensagem: "Mensagem não encontrada"
+            Success: false,
+            Message: "Mensagem não encontrada"
         });
     }
 
-    const mensagemAtualizada = listaRecados[validarId];
-    mensagemAtualizada.title = data.title;
-    mensagemAtualizada.description = data.description;
+    const messageUpdated = message[validateId];
+    messageUpdated.title = data.title;
+    messageUpdated.description = data.description;
 
     return response.status(200).json({
-        Mensagem: "Mensagem atualizada com sucesso!",
-        mensagemAtualizada
+        Success: true,
+        Message: "Mensagem atualizada com sucesso!",
+        data: messageUpdated
     });
 });
 
@@ -200,21 +219,25 @@ app.delete('/message/:id', (request,response) => {
 
     if (!id || isNaN(id)) {
         return response.status(400).json({
-            Mensagem: "Favor enviar um id válido"
+            Success: false,
+            Message: "Favor enviar um id válido"
         })
     }
 
-    const procurarId = listaRecados.findIndex(msg => msg.id === id)
+    const searchId = message.findIndex(msg => msg.id === id)
 
-    if (procurarId === -1) {
+    if (searchId === -1) {
         return response.status(404).json({
-            Mensagem: "Mensagem não encontrada, verifique o identificador em nosso banco" });
+            Success: false,
+            Message: "Mensagem não encontrada, verifique o identificador em nosso banco" 
+        });
     } else {
-        listaRecados.splice(procurarId, 1);
-        return response.status(200).json({ Mensagem: "Mensagem apagada com sucesso." });
+        message.splice(searchId, 1);
+        return response.status(200).json({ 
+            Success: true,
+            Message: "Mensagem apagada com sucesso." 
+        });
     }
 })
-
-
 
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`))
