@@ -5,15 +5,15 @@ function validarUsuario(request,response,next) {
 
     if (!email || email.trim() === '') {
         return response.status(400).json({
-            Success: false, 
-            Message: 'Por favor, verifique se passou o email' 
+            success: false, 
+            message: 'Por favor, verifique se passou o email' 
         });
     }
 
     if (!password || isNaN(password)) {
         return response.status(400).json({
-            Success: false, 
-            Message: 'Por favor, verifique se passou a senha' 
+            success: false, 
+            message: 'Por favor, verifique se passou a senha' 
         });
     }
 

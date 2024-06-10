@@ -25,7 +25,7 @@ let idNewUser = 1
 app.get('/', (request, response) => {
     return response.status(200).json({ 
         success: true,
-        Message: "Bem vindo à aplicação"
+        message: "Bem vindo à aplicação"
     })
 });
 
@@ -39,8 +39,8 @@ app.post('/signup', validarUsuario, async (request, response) => {
 
     if (!name || name.trim() === '') {
         return response.status(400).json({
-            Success: false,
-            Message: 'Por favor, verifique se passou o nome'
+            success: false,
+            message: 'Por favor, verifique se passou o nome'
         });
     }
 
@@ -49,7 +49,7 @@ app.post('/signup', validarUsuario, async (request, response) => {
     if (admin) {
         return response.status(400).json({
             success: false, 
-            Message: 'Email já cadastrado, insira outro' 
+            message: 'Email já cadastrado, insira outro' 
         });
     }
 
@@ -67,8 +67,8 @@ app.post('/signup', validarUsuario, async (request, response) => {
     idNewUser++; 
 
     return response.status(201).json({ 
-        Success: true,
-        Message: `Usuário com e-mail ${newUser.email} cadastrado com sucesso!`,
+        success: true,
+        message: `Usuário com e-mail ${newUser.email} cadastrado com sucesso!`,
         data: newUser
     });
 });
@@ -78,14 +78,14 @@ app.post('/signup', validarUsuario, async (request, response) => {
 // http://localhost:3000/login
 
 app.post('/login', validarUsuario, async (request, response) => {
-    const data = request.body
+    const data = request.body;
     
     const admin = users.find(user => user.email === data.email);
 
     if (!admin) {
         return response.status(400).json({ 
-            Success: false,
-            Message: 'Email não encontrado no sistema, verifique ou crie uma conta' 
+            success: false,
+            message: 'Email não encontrado no sistema, verifique ou crie uma conta' 
         });
     }
     
@@ -93,18 +93,20 @@ app.post('/login', validarUsuario, async (request, response) => {
 
     if (!comparePasswords) {
         return response.status(400).json({
-            Success: false,
-            Message: 'Senha incorreta ou credencial inválida' 
+            success: false,
+            message: 'Senha incorreta ou credencial inválida' 
         });
     }
+    
     const user = {
         id: admin.id,
         name: admin.name,
         email: admin.email
-    }
+    };
 
     return response.status(200).json({
-        Message: `Seja bem-vinda(o) ${admin.name}! Pessoa usuária logada com sucesso!`,
+        success: true,
+        message: `Seja bem-vinda(o) ${admin.name}! Pessoa usuária logada com sucesso!`,
         data: user
     });
 });
@@ -119,8 +121,8 @@ app.post('/message/:email', validarMensagem, (request,response) => {
 
     if (!email || email.trim() === "") {
         return response.status(400).json({
-            Success: false,
-            Message: "Favor enviar um e-mail válido"
+            success: false,
+            message: "Favor enviar um e-mail válido"
         })
     }
 
@@ -128,24 +130,24 @@ app.post('/message/:email', validarMensagem, (request,response) => {
 
     if (!validateEmail) {
         return response.status(404).json({
-            Success: false, 
-            Message: "Email não encontrado, verifique ou crie uma conta"
+            success: false, 
+            message: "Email não encontrado, verifique ou crie uma conta"
         })
     }
 
-    let newMessage = {
+    let newmessage = {
         id:idAutomatico,
         title: data.title,
         description: data.description,
     }
     
-    message.push(newMessage)
+    message.push(newmessage)
     idAutomatico++
 
     return response.status(201).json({
-        Success: true,
-        Message: `Mensagem criada com sucesso`,
-        data: newMessage
+        success: true,
+        message: `Mensagem criada com sucesso`,
+        data: newmessage
     })
 })
 
@@ -156,8 +158,8 @@ app.get('/message/:email', (request,response) => {
 
     if (!email) {
         return response.status(400).json({
-            Success: false,
-            Message: "Favor passar um email válido"
+            success: false,
+            message: "Favor passar um email válido"
         })
     }
 
@@ -165,14 +167,14 @@ app.get('/message/:email', (request,response) => {
 
     if (!searchEmail) {
         return response.status(404).json({
-            Success: false,
-            Message: "Email não encontrado, verifique ou crie uma conta "
+            success: false,
+            message: "Email não encontrado, verifique ou crie uma conta "
         })
     }
 
     return response.status(200).json({
-        Success: true,
-        Message: "Seja bem-vindo!",
+        success: true,
+        message: "Seja bem-vindo!",
         data: message
     })
 })
@@ -187,8 +189,8 @@ app.put('/message/:id', validarMensagem, (request,response) => {
 
     if (!id || isNaN(id)) {
         return response.status(400).json({
-            Success: false,
-            Message: "Por favor, informe um id válido da mensagem"
+            success: false,
+            message: "Por favor, informe um id válido da mensagem"
         })
     }
 
@@ -196,8 +198,8 @@ app.put('/message/:id', validarMensagem, (request,response) => {
 
     if (validateId === -1) {
         return response.status(404).json({
-            Success: false,
-            Message: "Mensagem não encontrada"
+            success: false,
+            message: "Mensagem não encontrada"
         });
     }
 
@@ -206,8 +208,8 @@ app.put('/message/:id', validarMensagem, (request,response) => {
     messageUpdated.description = data.description;
 
     return response.status(200).json({
-        Success: true,
-        Message: "Mensagem atualizada com sucesso!",
+        success: true,
+        message: "Mensagem atualizada com sucesso!",
         data: messageUpdated
     });
 });
@@ -219,8 +221,8 @@ app.delete('/message/:id', (request,response) => {
 
     if (!id || isNaN(id)) {
         return response.status(400).json({
-            Success: false,
-            Message: "Favor enviar um id válido"
+            success: false,
+            message: "Favor enviar um id válido"
         })
     }
 
@@ -228,14 +230,14 @@ app.delete('/message/:id', (request,response) => {
 
     if (searchId === -1) {
         return response.status(404).json({
-            Success: false,
-            Message: "Mensagem não encontrada, verifique o identificador em nosso banco" 
+            success: false,
+            message: "Mensagem não encontrada, verifique o identificador em nosso banco" 
         });
     } else {
         message.splice(searchId, 1);
         return response.status(200).json({ 
-            Success: true,
-            Message: "Mensagem apagada com sucesso." 
+            success: true,
+            message: "Mensagem apagada com sucesso." 
         });
     }
 })
