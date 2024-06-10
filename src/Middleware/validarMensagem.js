@@ -5,15 +5,15 @@ function validarMensagem(request, response, next) {
 
     if (!title || title.trim() === "") {
         return response.status(400).json({
-            Success: false,
-            Message: "Favor enviar um titulo válido"
+            success: false,
+            message: "Favor enviar um titulo válido"
         })
     }
 
     if (!description || description.trim() === "") {
         return response.status(400).json({
-            Success: false,
-            Message: "Favor enviar uma descrição válida"
+            success: false,
+            message: "Favor enviar uma descrição válida"
         })
     }
 
