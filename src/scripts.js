@@ -59,7 +59,7 @@ app.post('/signup', validarUsuario, async (request, response) => {
         id: idNewUser,
         name,
         email: data.email,
-        password: passwordEncrypted
+        // password: passwordEncrypted
     };
 
     users.push(newUser);
