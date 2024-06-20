@@ -12,7 +12,6 @@ app.use(express.json());
 
 const PORT = 3000;
 
-
 // ------------- Iniciando aplicação -------------------
 
 let message = []
@@ -72,7 +71,6 @@ app.post('/signup', validarUsuario, async (request, response) => {
         data: newUser
     });
 });
-
 
 // ------------------ login --------------------
 // http://localhost:3000/login
@@ -178,6 +176,43 @@ app.get('/message/:email', (request,response) => {
         data: message
     })
 })
+
+// ---------- ler recados com paginação ----------------
+//
+// http://localhost:3000/messages/:email
+app.get('/messages/:email', (request,response) => {
+    const { email } = request.params;
+    const { page = 1, limit = 10 } = request.query; 
+
+    if (!email) {
+        return response.status(400).json({
+            success: false,
+            message: "Favor passar um email válido"
+        })
+    }
+
+    const searchEmail = users.find(user => user.email === email);
+
+    if (!searchEmail) {
+        return response.status(404).json({
+            success: false,
+            message: "Email não encontrado, verifique ou crie uma conta"
+        })
+    }
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+
+    const paginatedMessages = message.slice(startIndex, endIndex);
+
+    return response.status(200).json({
+        success: true,
+        message: "Recados recuperados com sucesso!",
+        data: paginatedMessages,
+        currentPage: page,
+        totalPages: Math.ceil(message.length / limit)
+    });
+});
 
 // ----------- atualizar mensagem -----------
 // http://localhost:3000/message/:id
