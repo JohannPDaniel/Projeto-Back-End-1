@@ -182,7 +182,7 @@ app.get('/message/:email', (request,response) => {
 // http://localhost:3000/messages/:email
 app.get('/messages/:email', (request,response) => {
     const { email } = request.params;
-    const { page = 1, limit = 10 } = request.query; 
+    const { page = 1, limit = 6 } = request.query; 
 
     if (!email) {
         return response.status(400).json({
