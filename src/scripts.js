@@ -3,6 +3,7 @@ import cors from "cors"
 import bcrypt from "bcrypt"
 import validarUsuario from "./Middleware/validarUsuario.js";
 import validarMensagem from "./Middleware/validarMensagem.js";
+import { authMiddleware } from "./Middleware/authMiddleware.js";
 
 const app = express();
 
@@ -17,7 +18,7 @@ const PORT = 3000;
 let message = []
 let idAutomatico = 1
 
-let users = []
+export let users = []
 let idNewUser = 1
 
 // http://localhost:3000
@@ -111,30 +112,13 @@ app.post('/login', validarUsuario, async (request, response) => {
 
 // --------------- Criar recado -----------------
 // http://localhost:3000/message/:email
-app.post('/message/:email', validarMensagem, (request,response) => {
-
+app.post('/message', authMiddleware, validarMensagem, (request,response) => {
+    const id = Number(request.headers.authorization)
     const data = request.body
     
-    const { email } = request.params;
-
-    if (!email || email.trim() === "") {
-        return response.status(400).json({
-            success: false,
-            message: "Favor enviar um e-mail válido"
-        })
-    }
-
-    const validateEmail = users.find(msg => msg.email === email)
-
-    if (!validateEmail) {
-        return response.status(404).json({
-            success: false, 
-            message: "Email não encontrado, verifique ou crie uma conta"
-        })
-    }
-
     let newmessage = {
         id:idAutomatico,
+        userId: id,
         title: data.title,
         description: data.description,
     }
@@ -179,40 +163,33 @@ app.get('/message/:email', (request,response) => {
 
 // ---------- ler recados com paginação ----------------
 //
-// http://localhost:3000/messages/:email
-app.get('/messages/:email', (request,response) => {
-    const { email } = request.params;
-    const { page = 1, limit = 6 } = request.query; 
+// http://localhost:3000/message
+app.get('/messages', authMiddleware, (request, response) => {
+    const userId = Number(request.headers.authorization);
 
-    if (!email) {
-        return response.status(400).json({
-            success: false,
-            message: "Favor passar um email válido"
-        })
-    }
+    const page = Number(request.query.page) || 1;
+    const limit = Number(request.query.limit) || 5;
 
-    const searchEmail = users.find(user => user.email === email);
-
-    if (!searchEmail) {
-        return response.status(404).json({
-            success: false,
-            message: "Email não encontrado, verifique ou crie uma conta"
-        })
-    }
+    const recadosFound = message.filter(message => message.userId === userId);
 
     const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
+    const endIndex = page * limit;
 
-    const paginatedMessages = message.slice(startIndex, endIndex);
+    const recadosPaginacao = recadosFound.slice(startIndex, endIndex);
+
+    const totalPages = Math.ceil(recadosFound.length / limit);
 
     return response.status(200).json({
         success: true,
-        message: "Recados recuperados com sucesso!",
-        data: paginatedMessages,
-        currentPage: page,
-        totalPages: Math.ceil(message.length / limit)
+        message: 'Recados buscado com sucesso',
+        data: {
+            recados: recadosPaginacao,
+            total: recadosFound.length,
+            totalPages: totalPages,
+        }
     });
 });
+
 
 // ----------- atualizar mensagem -----------
 // http://localhost:3000/message/:id
