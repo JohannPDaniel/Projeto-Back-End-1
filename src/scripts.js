@@ -164,7 +164,7 @@ app.get('/message/:email', (request,response) => {
 // ---------- ler recados com paginação ----------------
 //
 // http://localhost:3000/message
-app.get('/messages', authMiddleware, (request, response) => {
+app.get('/message', authMiddleware, (request, response) => {
     const userId = Number(request.headers.authorization);
 
     const page = Number(request.query.page) || 1;
