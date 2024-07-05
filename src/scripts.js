@@ -62,6 +62,12 @@ app.post('/signup', validarUsuario, async (request, response) => {
         password: passwordEncrypted
     };
 
+    const newUser2 = {
+        id: idNewUser,
+        name,
+        email: data.email
+    }
+
     users.push(newUser);
 
     idNewUser++; 
@@ -69,7 +75,7 @@ app.post('/signup', validarUsuario, async (request, response) => {
     return response.status(201).json({ 
         success: true,
         message: `Usuário com e-mail ${newUser.email} cadastrado com sucesso!`,
-        data: newUser
+        data: newUser2
     });
 });
 
@@ -112,24 +118,42 @@ app.post('/login', validarUsuario, async (request, response) => {
 
 // --------------- Criar recado -----------------
 // http://localhost:3000/message/:email
-app.post('/message', authMiddleware, validarMensagem, (request,response) => {
+app.post('/message/:email', authMiddleware, validarMensagem, (request,response) => {
     const id = Number(request.headers.authorization)
     const data = request.body
+
+    const { email } = request.params
+
+    if (!email || email.trim() === '') {
+        return response.status(400).json({
+            success: false,
+            message: 'Favor enviar um email válido!'
+        })
+    }
+
+    const emailFound = users.find(address => address.email === email)
+
+    if (!emailFound) {
+        return response.status(400).json({
+            success: false,
+            message: 'Email não encontrado no sistema!'
+        })
+    }
     
-    let newmessage = {
+    let newMessage = {
         id:idAutomatico,
         userId: id,
         title: data.title,
         description: data.description,
     }
     
-    message.push(newmessage)
+    message.push(newMessage)
     idAutomatico++
 
     return response.status(201).json({
         success: true,
         message: `Mensagem criada com sucesso`,
-        data: newmessage
+        data: newMessage
     })
 })
 
