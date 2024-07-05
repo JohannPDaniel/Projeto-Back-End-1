@@ -2,9 +2,10 @@ import express from "express"
 import cors from "cors"
 import bcrypt from "bcrypt"
 import 'dotenv/config';
+import { v4 as uuidv4 } from 'uuid';
 import validarUsuario from "./Middleware/validarUsuario.js";
 import validarMensagem from "./Middleware/validarMensagem.js";
-import { authMiddleware } from "./Middleware/authMiddleware.js";
+import authMiddleware from "./Middleware/authMiddleware.js"
 
 const app = express();
 
@@ -17,10 +18,8 @@ const PORT = process.env.PORT;
 // ------------- Iniciando aplicação -------------------
 
 let message = []
-let idAutomatico = 1
 
 export let users = []
-let idNewUser = 1
 
 // http://localhost:3000
 app.get('/', (request, response) => {
@@ -34,46 +33,43 @@ app.get('/', (request, response) => {
 // http://localhost:3000/signup
 
 app.post('/signup', validarUsuario, async (request, response) => {
-    const data = request.body; 
-
-    const { name } = data
+    const data = request.body;
+    const { name, email, password } = data;
 
     if (!name || name.trim() === '') {
         return response.status(400).json({
             success: false,
-            message: 'Por favor, verifique se passou o nome'
+            message: 'Por favor, verifique se passou o nome corretamente !!!'
         });
     }
 
-    const admin = users.find(user => user.email === data.email);
-   
+    const admin = users.find(user => user.email === email);
+
     if (admin) {
         return response.status(400).json({
-            success: false, 
-            message: 'Email já cadastrado, insira outro' 
+            success: false,
+            message: 'Email já cadastrado em nosso banco de dados'
         });
     }
 
-    const passwordEncrypted = await bcrypt.hash(data.password, 10);
+    const passwordEncrypted = await bcrypt.hash(password, 10);
 
     const newUser = {
-        id: idNewUser,
+        id: uuidv4(),
         name,
-        email: data.email,
+        email,
         password: passwordEncrypted
     };
 
     const newUser2 = {
-        id: idNewUser,
+        id: newUser.id,
         name,
-        email: data.email
-    }
+        email
+    };
 
     users.push(newUser);
-
-    idNewUser++; 
-
-    return response.status(201).json({ 
+    console.log(users);
+    return response.status(201).json({
         success: true,
         message: `Usuário com e-mail ${newUser.email} cadastrado com sucesso!`,
         data: newUser2
@@ -85,25 +81,26 @@ app.post('/signup', validarUsuario, async (request, response) => {
 
 app.post('/login', validarUsuario, async (request, response) => {
     const data = request.body;
-    
-    const admin = users.find(user => user.email === data.email);
+    const { email, password } = data;
+
+    const admin = users.find(user => user.email === email);
 
     if (!admin) {
-        return response.status(400).json({ 
+        return response.status(400).json({
             success: false,
-            message: 'Email não encontrado no sistema, verifique ou crie uma conta' 
+            message: 'Email não encontrado no sistema, verifique ou crie uma conta'
         });
     }
-    
-    const comparePasswords = await bcrypt.compare(data.password, admin.password);
+
+    const comparePasswords = await bcrypt.compare(password, admin.password);
 
     if (!comparePasswords) {
         return response.status(400).json({
             success: false,
-            message: 'Senha incorreta ou credencial inválida' 
+            message: 'Senha incorreta ou credencial inválida'
         });
     }
-    
+
     const user = {
         id: admin.id,
         name: admin.name,
@@ -112,51 +109,49 @@ app.post('/login', validarUsuario, async (request, response) => {
 
     return response.status(200).json({
         success: true,
-        message: `Seja bem-vinda(o) ${admin.name}! Pessoa usuária logada com sucesso!`,
+        message: `Seja bem-vinda(o) ${admin.name}, Pessoa usuária logada com sucesso!`,
         data: user
     });
 });
 
 // --------------- Criar recado -----------------
 // http://localhost:3000/message/:email
-app.post('/message/:email', authMiddleware, validarMensagem, (request,response) => {
-    const id = Number(request.headers.authorization)
-    const data = request.body
-
-    const { email } = request.params
+app.post('/message/:email', authMiddleware, validarMensagem, (request, response) => {
+    const id = request.headers.authorization 
+    const data = request.body;
+    const { email } = request.params;
 
     if (!email || email.trim() === '') {
         return response.status(400).json({
             success: false,
             message: 'Favor enviar um email válido!'
-        })
+        });
     }
 
-    const emailFound = users.find(address => address.email === email)
+    const emailFound = users.find(address => address.email === email);
 
     if (!emailFound) {
         return response.status(400).json({
             success: false,
             message: 'Email não encontrado no sistema!'
-        })
+        });
     }
-    
-    let newMessage = {
-        id:idAutomatico,
+
+    const newMessage = {
+        id: uuidv4(),
         userId: id,
         title: data.title,
-        description: data.description,
-    }
-    
-    message.push(newMessage)
-    idAutomatico++
+        description: data.description
+    };
+
+    message.push(newMessage);
 
     return response.status(201).json({
         success: true,
-        message: `Mensagem criada com sucesso`,
+        message: 'Mensagem criada com sucesso',
         data: newMessage
-    })
-})
+    });
+});
 
 // ---------- ler recado ----------------
 // http://localhost:3000/message/:email
@@ -188,18 +183,20 @@ app.get('/message/:email', (request,response) => {
 
 // ---------- ler recados com paginação ----------------
 //
-// http://localhost:3000/message
+// http://localhost:3000/message?page=1&limit=5
 app.get('/message', authMiddleware, (request, response) => {
-    const userId = Number(request.headers.authorization);
-
+    const userId = request.headers.authorization;
     const page = Number(request.query.page) || 1;
     const limit = Number(request.query.limit) || 5;
 
-    const recadosFound = message.filter(message => message.userId === userId);
+    // Filtrando as mensagens por userId
+    const recadosFound = message.filter(msg => msg.userId === userId);
 
+    // Calculando índices de paginação
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
 
+    // Paginação
     const recadosPaginacao = recadosFound.slice(startIndex, endIndex);
 
     const totalPages = Math.ceil(recadosFound.length / limit);

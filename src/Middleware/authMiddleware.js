@@ -1,25 +1,25 @@
-import {users} from '../scripts.js'
+import { users } from "../scripts";
 
-export function authMiddleware(request, response, next) {
-    const userId = request.headers.authorization
+function authMiddleware(request, response, next) {
+    const userId = request.headers.authorization;
 
     if (!userId) {
         return response.status(401).json({
             success: false,
             message: 'Não autorizado!'
-        })
+        });
     }
 
-    console.log(userId);
-
-    const userFound = users.find(user => user.id === Number(userId))
+    const userFound = users.find(user => user.id === userId);
 
     if (!userFound) {
         return response.status(401).json({
             success: false,
             message: 'Id não encontrado, você não está autorizado!'
-        })
+        });
     }
 
     return next();
 }
+
+export default authMiddleware
