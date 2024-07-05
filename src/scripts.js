@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors"
 import bcrypt from "bcrypt"
+import 'dotenv/config';
 import validarUsuario from "./Middleware/validarUsuario.js";
 import validarMensagem from "./Middleware/validarMensagem.js";
 import { authMiddleware } from "./Middleware/authMiddleware.js";
@@ -11,7 +12,7 @@ app.use(cors());
 
 app.use(express.json());
 
-const PORT = 3000;
+const PORT = process.env.PORT;
 
 // ------------- Iniciando aplicação -------------------
 
