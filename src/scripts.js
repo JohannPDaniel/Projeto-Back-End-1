@@ -216,12 +216,11 @@ app.get('/message', authMiddleware, (request, response) => {
 // ----------- atualizar mensagem -----------
 // http://localhost:3000/message/:id
 app.put('/message/:id', validarMensagem, (request,response) => {
-    
-    const id = Number(request.params.id)
+    const id = request.params.id
 
     const data = request.body
 
-    if (!id || isNaN(id)) {
+    if (!id) {
         return response.status(400).json({
             success: false,
             message: "Por favor, informe um id válido da mensagem"
@@ -251,9 +250,9 @@ app.put('/message/:id', validarMensagem, (request,response) => {
 //----------- deletar mensagem --------------
 // http://localhost:3000/message/:id
 app.delete('/message/:id', (request,response) => {
-    const id = Number(request.params.id)
+    const id = request.params.id
 
-    if (!id || isNaN(id)) {
+    if (!id) {
         return response.status(400).json({
             success: false,
             message: "Favor enviar um id válido"
