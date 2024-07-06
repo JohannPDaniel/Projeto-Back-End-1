@@ -155,7 +155,7 @@ app.post('/message/:email', authMiddleware, validarMensagem, (request, response)
 
 // ---------- ler recado ----------------
 // http://localhost:3000/message/:email
-app.get('/message/:email', (request,response) => {
+app.get('/message/:email', authMiddleware, (request,response) => {
 
     const { email } = request.params
 
