@@ -159,7 +159,7 @@ app.get('/message/:email', authMiddleware, (request,response) => {
 
     const { email } = request.params
 
-    if (!email) {
+    if (!email || email.trim() === '') {
         return response.status(400).json({
             success: false,
             message: "Favor passar um email válido"
