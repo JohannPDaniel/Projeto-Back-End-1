@@ -139,7 +139,7 @@ app.post('/message/:email', authMiddleware, validarMensagem, (request, response)
 
     const newMessage = {
         id: uuidv4(),
-        userId: userId,  // Ensure correct naming here
+        userId: userId,  
         title: data.title,
         description: data.description
     };
@@ -155,7 +155,7 @@ app.post('/message/:email', authMiddleware, validarMensagem, (request, response)
 
 // ---------- ler recado ----------------
 // http://localhost:3000/message/:email
-app.get('/message/:email', authMiddleware, (request,response) => {
+app.get('/message/:email', (request,response) => {
 
     const { email } = request.params
 
