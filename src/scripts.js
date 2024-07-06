@@ -117,7 +117,7 @@ app.post('/login', validarUsuario, async (request, response) => {
 // --------------- Criar recado -----------------
 // http://localhost:3000/message/:email
 app.post('/message/:email', authMiddleware, validarMensagem, (request, response) => {
-    const id = request.headers.authorization 
+    const userId = request.headers.authorization; 
     const data = request.body;
     const { email } = request.params;
 
@@ -139,12 +139,12 @@ app.post('/message/:email', authMiddleware, validarMensagem, (request, response)
 
     const newMessage = {
         id: uuidv4(),
-        userId: id,
+        userId: userId,  // Ensure correct naming here
         title: data.title,
         description: data.description
     };
 
-    message.push(newMessage);
+    message.push(newMessage); 
 
     return response.status(201).json({
         success: true,
@@ -155,7 +155,7 @@ app.post('/message/:email', authMiddleware, validarMensagem, (request, response)
 
 // ---------- ler recado ----------------
 // http://localhost:3000/message/:email
-app.get('/message/:email', authMiddleware, (request,response) => {
+app.get('/message/:email', (request,response) => {
 
     const { email } = request.params
 
