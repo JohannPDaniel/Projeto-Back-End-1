@@ -155,32 +155,39 @@ app.post('/message/:email', authMiddleware, validarMensagem, (request, response)
 
 // ---------- ler recado ----------------
 // http://localhost:3000/message/:email
-app.get('/message/:email', authMiddleware, (request,response) => {
-
-    const { email } = request.params
+app.get('/message/:email', authMiddleware, (request, response) => {
+    const { email } = request.params;
+    const userId = request.headers.authorization;  // Assumindo que você está utilizando isso para autenticação
 
     if (!email || email.trim() === '') {
         return response.status(400).json({
             success: false,
             message: "Favor passar um email válido"
-        })
+        });
     }
 
-    const searchEmail = users.find(msg => msg.email === email)
+    const user = users.find(user => user.email === email);
 
-    if (!searchEmail) {
+    if (!user) {
         return response.status(404).json({
             success: false,
             message: "Email não encontrado, verifique ou crie uma conta"
-        })
+        });
+    }
+
+    if (user.id !== userId) {
+        return response.status(403).json({
+            success: false,
+            message: "O ID do usuário não corresponde ao e-mail"
+        });
     }
 
     return response.status(200).json({
         success: true,
-        message: "Seja bem-vindo!",
+        message: "Mensagens encontradas com sucesso",
         data: message
-    })
-})
+    });
+});
 
 // ---------- ler recados com paginação ----------------
 //
